@@ -12,6 +12,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.undo.UndoManager;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.FileReader;
+import java.util.List;
 
 public class App {
     private static String APP_NAME = "Simple TLV Util";
@@ -20,7 +22,7 @@ public class App {
     private JLabel messageLabel;
     private JTextArea parseTextArea;
     public App() {
-
+        EmvData.init();
     }
 
     private void onTLVValueChange(JTextField textField,BerTag berTag , DocumentEvent e){
@@ -107,6 +109,12 @@ public class App {
                     item.add(new JLabel(x.getTag().toString()));
                     JTextField textField = new JTextField(x.getHexValue());
                     textField.setPreferredSize(new Dimension(350,20));
+                    textField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                        @Override
+                        public void undoableEditHappened(UndoableEditEvent e) {
+                            manager.addEdit(e.getEdit());
+                        }
+                    });
                     textField.getDocument().addDocumentListener(new DocumentListener() {
                         @Override
                         public void insertUpdate(DocumentEvent e) {
@@ -123,7 +131,20 @@ public class App {
                             onTLVValueChange(textField,x.getTag(),e);
                         }
                     });
+                    String pretag = x.getTag().toString();
+                    String tag = pretag.substring(2,pretag.length());
+                    System.out.println(tag);
                     item.add(textField);
+
+                    EmvData data = StaticEntry.emvTags.get(tag);
+
+                    JLabel tagName = new JLabel();
+                    tagName.setPreferredSize(new Dimension(350,20));
+                    item.add(tagName);
+                    if(data != null){
+                        tagName.setText(data.getName());
+                    }
+
                     tlvGrid.add(item);
                 });
 
@@ -145,6 +166,7 @@ public class App {
     private void createUIComponents() {
         KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
 
+        parseTextArea = new JTextArea();
         messageLabel = new JLabel();
         mainPanel = new JPanel();
         mainPanel.setBorder(new EmptyBorder(10,10,10,10));
@@ -153,11 +175,10 @@ public class App {
         JLabel appLabel = new JLabel(APP_NAME);
         appLabel.setFont(new Font(appLabel.getFont().getName(),Font.BOLD,(int)(appLabel.getFont().getSize() * 1.5)));
 
-        mainPanel.add(appLabel);
+        mainPanel.add(appLabel,BorderLayout.WEST);
         mainPanel.add(new JSeparator());
         mainPanel.add(new JLabel("Parse TLV:"));
         mainPanel.add(Box.createVerticalStrut(10));
-
         parseTextArea.setLineWrap(true);
         parseTextArea.getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -211,39 +232,43 @@ public class App {
 
     private Component getAppMenu(){
         JToolBar toolBar = new JToolBar();
-        JMenu  menu = new JMenu ("Actions");
+        toolBar.setOrientation(SwingConstants.VERTICAL);
+
+        JPanel p = new JPanel();
         manager = new UndoManager();
 
-        menu.add(new JMenuItem(new AbstractAction("Undo") {
+
+
+        // create new buttons
+        JButton b1 = new JButton("Undo");
+
+        b1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
+                                try {
                     manager.undo();
                 } catch (Exception ex) {
                 }
             }
-        }));
+        });
+        JButton b2 = new JButton("Redo");
 
-        menu.add(new JMenuItem(new AbstractAction("Redo") {
+        b2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
+                                try {
                     manager.redo();
                 } catch (Exception ex) {
                 }
             }
-        }));
+        });
 
-        menu.add(new JMenuItem(new AbstractAction("Exit") {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.exit(0);
+        // add buttons
+        p.add(b1);
+        p.add(b2);
 
-            }
-        }));
+        toolBar.add(p);
 
-
-        parseTextArea = new JTextArea();
         parseTextArea.getDocument().addUndoableEditListener(new UndoableEditListener() {
             @Override
             public void undoableEditHappened(UndoableEditEvent e) {
@@ -251,10 +276,8 @@ public class App {
             }
         });
 
+        return toolBar;
 
-        JMenuBar menuBar = new JMenuBar();
-        menuBar.add(menu);
-        return menuBar;
     }
 
     public static void main(String[] args) {
@@ -262,7 +285,7 @@ public class App {
         frame.setContentPane(new App().mainPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocation(150, 100);
-        frame.setPreferredSize(new Dimension(600,700));
+        frame.setPreferredSize(new Dimension(850,700));
 
         frame.pack();
         frame.setVisible(true);

@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="SimpleTLVUtil:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/SimpleTLVUtil_jar</output-path>
+    <root id="archive" name="SimpleTLVUtil.jar">
+      <element id="module-output" name="SimpleTLVUtil" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/payneteasy/ber-tlv/1.0-11/ber-tlv-1.0-11.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
