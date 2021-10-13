@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.List;
 
 @Getter
@@ -50,9 +52,9 @@ public class EmvData {
     public static void init() {
 
         try{
-            String file = CustomFileReader.getFileFromResources("emvtagssunmi.csv");
+            InputStream stream = CustomFileReader.getFileFromResources("emvtagssunmi.csv");
 
-            List<EmvData> emvData = new CsvToBeanBuilder<EmvData>(new FileReader(file)).withType(EmvData.class).build().parse();
+            List<EmvData> emvData = new CsvToBeanBuilder<EmvData>(new InputStreamReader(stream)).withType(EmvData.class).build().parse();
 
             emvData.forEach(x->{
                 StaticEntry.emvTags.put(x.getTag(),x);

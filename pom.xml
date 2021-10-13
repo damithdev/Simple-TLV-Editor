@@ -54,5 +54,10 @@
         </plugins>
     </build>
 
+    <resources>
+        <resource>
+            <directory>[your folder here]</directory>
+        </resource>
+    </resources>
 
 </project>

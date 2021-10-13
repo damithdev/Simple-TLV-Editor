@@ -1,21 +1,22 @@
 package dev.damith.simpletlv;
 
+import java.io.InputStream;
 import java.net.URL;
 
 public class CustomFileReader {
 
 
 
-    public static String getFileFromResources(String fileName) {
+    public static InputStream getFileFromResources(String fileName) {
 
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
 
-        URL resource = classloader.getResource(fileName);
-        if (resource == null) {
-
+        InputStream stream = classloader.getResourceAsStream(fileName);
+        if (stream == null) {
             throw new IllegalArgumentException("file is not found!");
         } else {
-            return resource.getFile();//new java.io.File(resource.getFile());
+            return stream;
+
         }
 
     }
