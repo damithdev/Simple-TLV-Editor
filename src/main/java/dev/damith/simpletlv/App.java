@@ -13,17 +13,182 @@ import javax.swing.undo.UndoManager;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.FileReader;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
-public class App {
-    private static String APP_NAME = "Simple TLV Util";
-    private JPanel mainPanel;
-    private JScrollPane tlvEditScrollPane;
-    private JLabel messageLabel;
-    private JTextArea parseTextArea;
+public class App{
+    private static final String APP_NAME = "Simple TLV Editor";
+    JFrame frame;
+    JPanel mainPanel;
+    JMenuBar menuBar;
+    JButton uMenu,rMenu;
+    JScrollPane tlvEditScrollPane;
+    JLabel messageLabel;
+    JTextArea parseTextArea;
+    UndoManager manager = new UndoManager();
+
+
+
     public App() {
+        frame = new JFrame(APP_NAME);
+
+        createAppMenu();
+        createUIComponents();
+
+        frame.add(menuBar);
+        frame.setJMenuBar(menuBar);
+        frame.setContentPane(mainPanel);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
+        frame.setLocation(150, 100);
+        frame.setPreferredSize(new Dimension(850,700));
+
+        frame.pack();
+        frame.setVisible(true);
         EmvData.init();
     }
+
+    private void createAppMenu(){
+
+        menuBar = new JMenuBar();
+        uMenu = new JButton("Undo");
+        uMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    manager.undo();
+                } catch (Exception ex) {
+                }
+            }
+        });
+        rMenu = new JButton("Redo");
+
+        rMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    manager.redo();
+                } catch (Exception ex) {
+                }
+            }
+        });
+
+        menuBar.add(uMenu);
+        menuBar.add(rMenu);
+
+
+
+    }
+
+    private void createUIComponents() {
+
+        KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx());
+
+        mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+
+        JPanel panelHeader = new JPanel();
+        JLabel appLabel = new JLabel(APP_NAME);
+        appLabel.setFont(new Font(appLabel.getFont().getName(),Font.BOLD,(int)(appLabel.getFont().getSize() * 1.5)));
+        panelHeader.add(appLabel);
+        panelHeader.setSize(new Dimension(mainPanel.getWidth() , 100));
+        mainPanel.add(panelHeader);
+        mainPanel.add(new JSeparator());
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createTitledBorder("String: Paste/Edit the TLV String here"));
+
+        parseTextArea = new JTextArea();
+        parseTextArea.setLineWrap(true);
+        parseTextArea.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                onTLVTextChange(e);
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                onTLVTextChange(e);
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                onTLVTextChange(e);
+            }
+        });
+        parseTextArea.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            @Override
+            public void undoableEditHappened(UndoableEditEvent e) {
+                manager.addEdit(e.getEdit());
+            }
+        });
+
+        JScrollPane textAreaScrollPane = new JScrollPane(parseTextArea);
+        textAreaScrollPane.getViewport().setPreferredSize(new Dimension(400,50));
+        panel.add(textAreaScrollPane);
+        panel.add(Box.createVerticalStrut(10));
+        mainPanel.add(panel);
+
+
+        JPanel panelEdit = new JPanel();
+        panelEdit.setLayout(new BoxLayout(panelEdit, BoxLayout.Y_AXIS));
+        panelEdit.setBorder(BorderFactory.createTitledBorder("Tags: Edit the TLV Tags here"));
+
+        tlvEditScrollPane = new JScrollPane(new JPanel());
+        tlvEditScrollPane.getViewport().setPreferredSize(new Dimension(400,400));
+        panelEdit.add(tlvEditScrollPane);
+        mainPanel.add(panelEdit);
+
+        messageLabel = new JLabel("");
+
+        JPanel panelAlerts = new JPanel();
+        panelAlerts.setLayout(new FlowLayout(FlowLayout.LEFT));
+        panelAlerts.add(messageLabel);
+        mainPanel.add(panelAlerts);
+
+        mainPanel.add(new JSeparator());
+        JPanel panelFooter = new JPanel();
+        JLabel appFooterLabel = new JLabel("Developed by damith.dev © 2021 | ");
+        JLabel hyperlink = new JLabel("Visit Repo");
+        hyperlink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        hyperlink.setForeground(Color.BLUE.darker());
+        hyperlink.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    Desktop.getDesktop().browse(new URI("https://github.com/damithdev/Simple-TLV-Parser-POS"));
+
+                } catch (IOException | URISyntaxException e1) {
+                    e1.printStackTrace();
+                }
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                // the mouse has entered the label
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                // the mouse has exited the label
+            }
+        });
+        panelFooter.add(appFooterLabel);
+        panelFooter.add(hyperlink);
+        mainPanel.add(panelFooter);
+
+    }
+
+    public static void main(String[] args) {
+        new App();
+    }
+
+
+////////////////////////////////////////////////////////////////////////////////
 
     private void onTLVValueChange(JTextField textField,BerTag berTag , DocumentEvent e){
         try {
@@ -163,133 +328,6 @@ public class App {
         }
     }
 
-    private void createUIComponents() {
-        KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
-
-        parseTextArea = new JTextArea();
-        messageLabel = new JLabel();
-        mainPanel = new JPanel();
-        mainPanel.setBorder(new EmptyBorder(10,10,10,10));
-        mainPanel.setLayout(new BoxLayout(mainPanel,BoxLayout.Y_AXIS));
-        mainPanel.add(getAppMenu(),BorderLayout.LINE_END);
-        JLabel appLabel = new JLabel(APP_NAME);
-        appLabel.setFont(new Font(appLabel.getFont().getName(),Font.BOLD,(int)(appLabel.getFont().getSize() * 1.5)));
-
-        mainPanel.add(appLabel,BorderLayout.WEST);
-        mainPanel.add(new JSeparator());
-        mainPanel.add(new JLabel("Parse TLV:"));
-        mainPanel.add(Box.createVerticalStrut(10));
-        parseTextArea.setLineWrap(true);
-        parseTextArea.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                onTLVTextChange(e);
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                onTLVTextChange(e);
-
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                onTLVTextChange(e);
-
-            }
-        });
-
-
-        JScrollPane textAreaScrollPane = new JScrollPane(parseTextArea);
-        textAreaScrollPane.getViewport().setPreferredSize(new Dimension(400,50));
-
-        mainPanel.add(textAreaScrollPane);
-        mainPanel.add(Box.createVerticalStrut(10));
-        tlvEditScrollPane = new JScrollPane(new JPanel());
-
-
-        mainPanel.add(Box.createVerticalStrut(10));
-        mainPanel.add(new JSeparator());
-
-
-        mainPanel.add(new JLabel("Modify TLV:"));
-        mainPanel.add(Box.createVerticalStrut(10));
-
-
-        tlvEditScrollPane.getViewport().setPreferredSize(new Dimension(400,400));
-
-        mainPanel.add(tlvEditScrollPane);
-        mainPanel.add(Box.createVerticalStrut(10));
-        mainPanel.add(messageLabel);
-        mainPanel.add(Box.createVerticalStrut(10));
-        mainPanel.add(new JSeparator());
-        mainPanel.add(new JLabel("Developed by Damith Warnakulasuriya : damith.dev © 2021 | Special Thanks to @payneteasy"));
-
-
-
-    }
-    UndoManager manager = new UndoManager();
-
-    private Component getAppMenu(){
-        JToolBar toolBar = new JToolBar();
-        toolBar.setOrientation(SwingConstants.VERTICAL);
-
-        JPanel p = new JPanel();
-        manager = new UndoManager();
-
-
-
-        // create new buttons
-        JButton b1 = new JButton("Undo");
-
-        b1.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                                try {
-                    manager.undo();
-                } catch (Exception ex) {
-                }
-            }
-        });
-        JButton b2 = new JButton("Redo");
-
-        b2.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                                try {
-                    manager.redo();
-                } catch (Exception ex) {
-                }
-            }
-        });
-
-        // add buttons
-        p.add(b1);
-        p.add(b2);
-
-        toolBar.add(p);
-
-        parseTextArea.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            @Override
-            public void undoableEditHappened(UndoableEditEvent e) {
-                manager.addEdit(e.getEdit());
-            }
-        });
-
-        return toolBar;
-
-    }
-
-    public static void main(String[] args) {
-        JFrame frame = new JFrame(APP_NAME);
-        frame.setContentPane(new App().mainPanel);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLocation(150, 100);
-        frame.setPreferredSize(new Dimension(850,700));
-
-        frame.pack();
-        frame.setVisible(true);
-    }
 
     public boolean checkHex(String s)
     {
@@ -317,7 +355,7 @@ public class App {
         return true;
     }
 
-    public static String bytes2HexStr(byte[] bytes) {
+    public String bytes2HexStr(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
         String temp;
         for (byte b : bytes) {
@@ -329,4 +367,8 @@ public class App {
         }
         return sb.toString().toUpperCase();
     }
+
+
+
+
 }
