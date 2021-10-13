@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
@@ -52,7 +51,7 @@ public class EmvData {
     public static void init() {
 
         try{
-            InputStream stream = CustomFileReader.getFileFromResources("emvtagssunmi.csv");
+            InputStream stream = CustomFileReader.getFileFromResources("emvtags.csv");
 
             List<EmvData> emvData = new CsvToBeanBuilder<EmvData>(new InputStreamReader(stream)).withType(EmvData.class).build().parse();
 
