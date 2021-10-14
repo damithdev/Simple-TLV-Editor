@@ -1,11 +1,6 @@
 <div id="top"></div>
 
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
+
 
 
 
@@ -18,10 +13,9 @@
   <p align="center">
     A tool to read, Identify and edit TLV text!
 
-    <br />
-    <a href="https://github.com/damithdev/Simple-TLV-Editor/issues">Report Bug</a>
+<!--     <a href="https://github.com/damithdev/Simple-TLV-Editor/issues">Report Bug</a>
     ·
-    <a href="https://github.com/damithdev/Simple-TLV-Editor/issues">Request Feature</a>
+    <a href="https://github.com/damithdev/Simple-TLV-Editor/issues">Request Feature</a> -->
   </p>
 </div>
 
