@@ -160,7 +160,7 @@ public class App{
             @Override
             public void mouseClicked(MouseEvent e) {
                 try {
-                    Desktop.getDesktop().browse(new URI("https://github.com/damithdev/Simple-TLV-Parser-POS"));
+                    Desktop.getDesktop().browse(new URI("https://github.com/damithdev/Simple-TLV-Editor"));
 
                 } catch (IOException | URISyntaxException e1) {
                     e1.printStackTrace();
